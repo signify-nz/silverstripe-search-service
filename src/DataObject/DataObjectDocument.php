@@ -37,6 +37,7 @@ use SilverStripe\SearchService\Service\PageCrawler;
 use SilverStripe\SearchService\Service\Traits\ConfigurationAware;
 use SilverStripe\SearchService\Service\Traits\ServiceAware;
 use SilverStripe\Security\Member;
+use SilverStripe\Subsites\Model\Subsite;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\ViewableData;
 
@@ -609,10 +610,20 @@ class DataObjectDocument implements
 
         if (!$dataObject && DataObject::has_extension($data['className'], Versioned::class) && $data['fallback']) {
             // get the latest version - usually this is an object that has been deleted
+            $subsiteFilterDisabled = null;
+            if (class_exists(Subsite::class)) {
+                $subsiteFilterDisabled = Subsite::$disable_subsite_filter;
+                Subsite::disable_subsite_filter(true);
+            }
+
             $dataObject = Versioned::get_latest_version(
                 $data['className'],
                 $data['id']
             );
+
+            if (class_exists(Subsite::class) && $subsiteFilterDisabled !== null) {
+                Subsite::disable_subsite_filter($subsiteFilterDisabled);
+            }
         }
 
         if (!$dataObject) {
