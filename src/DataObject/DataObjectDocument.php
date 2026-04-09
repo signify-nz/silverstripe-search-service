@@ -610,7 +610,9 @@ class DataObjectDocument implements
 
         if (!$dataObject && DataObject::has_extension($data['className'], Versioned::class) && $data['fallback']) {
             // get the latest version - usually this is an object that has been deleted
+            $subsiteFilterDisabled = null;
             if (class_exists(Subsite::class)) {
+                $subsiteFilterDisabled = Subsite::$disable_subsite_filter;
                 Subsite::disable_subsite_filter(true);
             }
 
@@ -619,8 +621,8 @@ class DataObjectDocument implements
                 $data['id']
             );
 
-            if (class_exists(Subsite::class)) {
-                Subsite::disable_subsite_filter(false);
+            if (class_exists(Subsite::class) && $subsiteFilterDisabled !== null) {
+                Subsite::disable_subsite_filter($subsiteFilterDisabled);
             }
         }
 
